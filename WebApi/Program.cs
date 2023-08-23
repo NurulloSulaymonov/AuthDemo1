@@ -48,6 +48,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+//who are you?
+app.UseAuthentication();
+//are you allowed?
 app.UseAuthorization();
 
 app.MapControllers();

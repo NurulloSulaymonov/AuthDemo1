@@ -1,5 +1,6 @@
 using System.Net;
 using Domain.Dtos;
+using Domain.Filters;
 using Domain.Response;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -18,9 +19,9 @@ public class QuoteController  :ControllerBase
     }
 
     [HttpGet("get-quotes")]
-    public async Task<Response<List<GetQuoteDto>>> GetQuotes()
+    public async Task<PagedResponse<List<GetQuoteDto>>> GetQuotes(GetQuoteFilter filter)
     {
-        return await _quoteService.GetQuotes();
+        return await _quoteService.GetQuotes(filter);
     }
     
     

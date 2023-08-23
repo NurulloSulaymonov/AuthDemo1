@@ -2,6 +2,7 @@ using System.Net;
 using AutoMapper;
 using Domain.Dtos;
 using Domain.Entities;
+using Domain.Filters;
 using Domain.Response;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -18,35 +19,21 @@ public class QuoteService : IQuoteService
         _context = context;
         _mapper = mapper;
     }
-    public async Task<Response<List<GetQuoteDto>>> GetQuotes()
+    public async Task<PagedResponse<List<GetQuoteDto>>> GetQuotes(GetQuoteFilter filter)
     {
-       
-        // var linq = await (
-        //     from q in _context.Quotes
-        //     join c in _context.Categories on q.CategoryId equals c.Id
-        //     select new GetQuoteDto()
-        //     {
-        //         Id = q.Id,
-        //         AuthorName = q.Author,
-        //         Title = q.QuoteText,
-        //         CreatedAt = q.CreatedAt,
-        //         ImageName = q.ImageName,
-        //         CategoryName = c.Name
-        //     }).ToListAsync();
-        var quotes = _context.Quotes;
-        var mapped = _mapper.Map<List<GetQuoteDto>>(quotes.ToList());
-        return new Response<List<GetQuoteDto>>(mapped);
-        // var efcore = await _context.Quotes.Select(q => new GetQuoteDto()
-        // {
-        //     Id = q.Id,
-        //     AuthorName = q.Author,
-        //     Title = q.QuoteText,
-        //     CreatedAt = q.CreatedAt,
-        //     ImageName = q.ImageName,
-        //     CategoryName = q.Category.Name
-        // }).ToListAsync();
-        // return efcore;
-        // return linq;
+        
+        var quotes =  _context.Quotes.AsQueryable();
+
+        if (string.IsNullOrEmpty(filter.Author) == false)
+            quotes = quotes.Where(q => q.Author.ToLower().Contains(filter.Author.ToLower()));
+        
+        if (string.IsNullOrEmpty(filter.QuoteText) == false)
+            quotes = quotes.Where(q => q.Category.Name.ToLower().Contains(filter.QuoteText.ToLower()));
+
+        var totalRecords = quotes.Count();
+        var mapped = _mapper.Map<List<GetQuoteDto>>(quotes);
+        return new PagedResponse<List<GetQuoteDto>>(filter.PageNumber,filter.PageSize,totalRecords,mapped);
+        
     }
 
     public async Task<Response<GetQuoteDto>> GetQuoteById(int id)
