@@ -1,3 +1,4 @@
+using Domain.Dtos;
 using Domain.Filters;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -20,6 +21,7 @@ public class QuoteController:Controller
         var response = await _quoteService.GetQuotes(filter);
         return View(response);
     }
+    
     
     
     

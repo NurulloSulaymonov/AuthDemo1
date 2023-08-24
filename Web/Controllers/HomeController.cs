@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Web.Models;
 using Web.Views.Home;
@@ -18,12 +19,13 @@ public class HomeController : Controller
     {
         return View();
     }
-    
+    [Authorize]
     public IActionResult About()
     {
         return View();
     }
     
+    [Authorize(Roles = "Admin,Teacher")]
     public IActionResult Products()
     {
         var products = new List<Product>()
@@ -35,6 +37,11 @@ public class HomeController : Controller
             new Product("ahmad", "Muhammad", "test"),
         };
         return View(products);
+    }
+
+    public IActionResult QueryString(string text,string text2)
+    {
+        return Json(new {text1 = text, text2});
     }
 
     public IActionResult Privacy()

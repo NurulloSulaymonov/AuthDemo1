@@ -23,7 +23,6 @@ builder.Services.AddAuthentication("CookieAuth")
     {
         options.AccessDeniedPath = "/Account/AccessDenied/";
         options.LoginPath = "/Account/Login/";
-        options.ExpireTimeSpan = TimeSpan.FromHours(1);
     });
 
 var app = builder.Build();

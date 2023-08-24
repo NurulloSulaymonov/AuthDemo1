@@ -7,14 +7,23 @@ namespace Web.Controllers;
 
 public class AccountController : Controller
 {
-    [HttpGet]
-    public IActionResult Login()
+    private readonly ILogger<AccountController> _logger;
+
+    public AccountController(ILogger<AccountController> logger)
     {
-        return View();
+        _logger = logger;
+    }
+    [HttpGet]
+    public IActionResult Login(string? ReturnUrl)
+    {
+        return View(new LoginDto()
+        {
+            ReturnUrl = ReturnUrl
+        });
     }
     
     [HttpPost]
-    public async Task<IActionResult> Login(LoginDto model)
+    public async Task<IActionResult> Login([FromBody]LoginDto model)
     {
         if (model.Username == "test" && model.Password == "test1")
         {
@@ -28,12 +37,21 @@ public class AccountController : Controller
             var identity = new ClaimsIdentity(claims, "UserIdentity");
             await  HttpContext.SignInAsync(new ClaimsPrincipal(identity), new AuthenticationProperties
             {
-                ExpiresUtc = DateTime.UtcNow.AddMinutes(1),
+                ExpiresUtc = DateTime.UtcNow.AddSeconds(10),
                 IsPersistent = true,
             });
+            
+            
+            if (model.ReturnUrl != null)
+                return Redirect(model.ReturnUrl);
+            else return RedirectToAction("index", "Home");
+        }
+        else
+        {
+            return View(model);
         }
 
-        return RedirectToAction("Index", "Home");
+        
     }
 
     public IActionResult AccessDenied()

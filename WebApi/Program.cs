@@ -1,6 +1,7 @@
 using Infrastructure.Automapper;
 using Infrastructure.Data;
 using Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +13,21 @@ var builder = WebApplication.CreateBuilder(args);
 var connection = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<DataContext>(conf => conf.UseNpgsql(connection));
 
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(config =>
+    {
+        config.Password.RequiredLength = 4;
+        config.Password.RequireDigit = false;
+        config.Password.RequireNonAlphanumeric = false;
+        config.Password.RequireUppercase = false;
+        config.Password.RequireLowercase = false;
+    })
+    .AddEntityFrameworkStores<DataContext>()
+    .AddDefaultTokenProviders();
+
+
 builder.Services.AddScoped<IQuoteService, QuoteService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 //automapper
 builder.Services.AddAutoMapper(typeof(ServiceProfile));
