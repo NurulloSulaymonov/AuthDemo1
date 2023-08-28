@@ -23,7 +23,7 @@ public class AccountController : Controller
     }
     
     [HttpPost]
-    public async Task<IActionResult> Login([FromBody]LoginDto model)
+    public async Task<IActionResult> Login(LoginDto model)
     {
         if (model.Username == "test" && model.Password == "test1")
         {
@@ -37,7 +37,7 @@ public class AccountController : Controller
             var identity = new ClaimsIdentity(claims, "UserIdentity");
             await  HttpContext.SignInAsync(new ClaimsPrincipal(identity), new AuthenticationProperties
             {
-                ExpiresUtc = DateTime.UtcNow.AddSeconds(10),
+                ExpiresUtc = DateTime.UtcNow.AddHours(1),
                 IsPersistent = true,
             });
             
@@ -51,7 +51,6 @@ public class AccountController : Controller
             return View(model);
         }
 
-        
     }
 
     public IActionResult AccessDenied()

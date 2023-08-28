@@ -22,6 +22,9 @@ public class HomeController : Controller
     [Authorize]
     public IActionResult About()
     {
+
+        var userInfo = User;
+        
         return View();
     }
     
