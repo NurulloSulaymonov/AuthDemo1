@@ -1,9 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Domain.Dtos;
 using Domain.Response;
+using Infrastructure.Data;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -14,11 +17,19 @@ public class AccountService : IAccountService
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly DataContext _context;
+    private readonly RoleManager<IdentityRole> _roleManager;
 
-    public AccountService(UserManager<IdentityUser> userManager, IConfiguration configuration)
+    public AccountService(
+        UserManager<IdentityUser> userManager, 
+        IConfiguration configuration,
+        DataContext context,
+        RoleManager<IdentityRole> roleManager)
     {
         _userManager = userManager;
         _configuration = configuration;
+        _context = context;
+        _roleManager = roleManager;
     }
     
     public async Task<Response<RegisterDto>> Register(RegisterDto model)
@@ -30,13 +41,35 @@ public class AccountService : IAccountService
             PhoneNumber = model.PhoneNumber
         };
 
+       
         var response = await _userManager.CreateAsync(mapped,model.Password);
         if (response.Succeeded == true)
             return new Response<RegisterDto>(model);
         else return new Response<RegisterDto>(HttpStatusCode.BadRequest, "something is wrong");
 
     }
+
+    public async Task<Response<string>> AddUserToRole(UserRoleDto userRole)
+    {
+        var role = await _roleManager.FindByIdAsync(userRole.RoleId);
+        var user = await _userManager.FindByIdAsync(userRole.UserId);
+        var userInRole = await _userManager.IsInRoleAsync(user, role.Name);
+        if (userInRole == true) return new Response<string>(HttpStatusCode.BadRequest, "Role exists");
+        await _userManager.AddToRoleAsync(user, role.Name);
+        return new Response<string>(HttpStatusCode.OK, "done");
+    }
+
     
+    public async Task<Response<string>> RemoveUserFromRole(UserRoleDto userRole)
+    {
+        var role = await _roleManager.FindByIdAsync(userRole.RoleId);
+        var user = await _userManager.FindByIdAsync(userRole.UserId);
+        var userInRole = await _userManager.IsInRoleAsync(user, role.Name);
+        if (userInRole == false) return new Response<string>(HttpStatusCode.BadRequest, "user doesn't have this role");
+        await _userManager.RemoveFromRoleAsync(user, role.Name);
+        return new Response<string>(HttpStatusCode.OK, "done");
+    }
+
     
     public async Task<Response<string>> Login(LoginDto login)
     {

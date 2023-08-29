@@ -1,6 +1,7 @@
 using System.Text;
 using Infrastructure.Automapper;
 using Infrastructure.Data;
+using Infrastructure.Seed;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -31,6 +32,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(config =>
 
 
 builder.Services.AddScoped<IQuoteService, QuoteService>();
+builder.Services.AddScoped<Seeder>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 
 //automapper
@@ -105,8 +107,14 @@ var app = builder.Build();
 //auto update database
 try
 {
-    var datacontext = app.Services.CreateScope().ServiceProvider.GetRequiredService<DataContext>();
+    var serviceProvider = app.Services.CreateScope().ServiceProvider; 
+    var datacontext = serviceProvider.GetRequiredService<DataContext>();
     await datacontext.Database.MigrateAsync();
+    
+    //seed data
+    var seeder = serviceProvider.GetRequiredService<Seeder>();
+    await seeder.SeedRole();
+    await seeder.SeedUser();
 }
 catch (Exception e)
 {

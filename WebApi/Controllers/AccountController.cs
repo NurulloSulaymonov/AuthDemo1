@@ -2,11 +2,13 @@ using System.Net;
 using Domain.Dtos;
 using Domain.Response;
 using Infrastructure.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers;
 
 [Route("[controller]")]
+[Authorize]
 public class AccountController : ControllerBase
 {
     private readonly IAccountService _accountService;
@@ -17,6 +19,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("Register")]
+    [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody]RegisterDto registerDto)
     {
         if (ModelState.IsValid)
@@ -34,6 +37,7 @@ public class AccountController : ControllerBase
     }
     
     [HttpPost("Login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody]LoginDto registerDto)
     {
         if (ModelState.IsValid)

@@ -3,12 +3,14 @@ using Domain.Dtos;
 using Domain.Filters;
 using Domain.Response;
 using Infrastructure.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers;
 
 [Route("[controller]")]
+[Authorize]
 public class QuoteController  :ControllerBase
 {
     private readonly IQuoteService _quoteService;
@@ -26,6 +28,7 @@ public class QuoteController  :ControllerBase
     
     
     [HttpPost("add-quote")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> AddQuote([FromBody]AddQuoteDto quoteDto)
     {
         if (ModelState.IsValid)
@@ -44,12 +47,14 @@ public class QuoteController  :ControllerBase
     
     
     [HttpPut("update-quote")]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<Response<GetQuoteDto>> UpdateQuote(AddQuoteDto quoteDto)
     {
         return await _quoteService.UpdateQuote(quoteDto);
     }
     
     [HttpDelete("delete-quote")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> AddQuote(int  quoteId)
     {
       var response = await _quoteService.DeleteQuote(quoteId);
